@@ -46,6 +46,8 @@ export default function BusinessCard({ business, className }: BusinessCardProps)
     if (business.id) router.push(`/business/${business.id}`);
   };
 
+  // No cart actions on business card; cart is handled on product cards
+
   return (
     <div
       onClick={onNavigate}
