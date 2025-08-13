@@ -35,12 +35,11 @@ export default function SignupPage() {
       const json = await res.json()
       if (!res.ok) throw new Error(json?.error || 'Signup failed')
 
-      // Auto-login the user client-side
-      const { error: signinError } = await supabaseBrowser.auth.signInWithPassword({ email: normalizedEmail, password })
-      if (signinError) throw signinError
-
       setStatus('success')
-      router.push('/business/register')
+      // Redirect to login page after a short delay to show success message
+      setTimeout(() => {
+        router.push('/auth/login')
+      }, 1500)
     } catch (e: any) {
       setStatus('error')
       setErrorMsg(e?.message || 'Signup failed')
