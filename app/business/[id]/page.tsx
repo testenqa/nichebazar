@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
+import { Product } from '@/types/product'
 
 export default function BusinessDetailsPage() {
   const params = useParams()
   const id = Array.isArray(params?.id) ? params.id[0] : params?.id
   const [row, setRow] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
+  const [products, setProducts] = useState<Product[]>([])
 
   useEffect(() => {
     let mounted = true
@@ -15,13 +17,26 @@ export default function BusinessDetailsPage() {
       if (!id) return
       setLoading(true)
       try {
-        const res = await fetch('/api/businesses', { cache: 'no-store' })
-        const json = await res.json()
-        const items = Array.isArray(json?.data) ? json.data : []
+        const [businessRes, productsRes] = await Promise.all([
+          fetch('/api/businesses', { cache: 'no-store' }),
+          fetch(`/api/products?businessId=${id}`, { cache: 'no-store' })
+        ])
+        
+        const businessJson = await businessRes.json()
+        const productsJson = await productsRes.json()
+        
+        const items = Array.isArray(businessJson?.data) ? businessJson.data : []
         const found = items.find((b: any) => String(b.id) === String(id)) || null
-        if (mounted) setRow(found)
+        
+        if (mounted) {
+          setRow(found)
+          setProducts(Array.isArray(productsJson?.data) ? productsJson.data : [])
+        }
       } catch (_) {
-        if (mounted) setRow(null)
+        if (mounted) {
+          setRow(null)
+          setProducts([])
+        }
       } finally {
         if (mounted) setLoading(false)
       }
@@ -84,6 +99,31 @@ export default function BusinessDetailsPage() {
           <section className="space-y-2 md:col-span-2">
             <h2 className="text-lg font-semibold text-gray-900">Rejection Comment</h2>
             <div className="text-gray-700 whitespace-pre-wrap">{row.rejection_comment}</div>
+          </section>
+        )}
+
+        {products.length > 0 && (
+          <section className="space-y-4 md:col-span-2">
+            <h2 className="text-lg font-semibold text-gray-900">Products</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {products.map((product) => (
+                <div key={product.id} className="bg-white rounded-lg shadow overflow-hidden">
+                  {product.photo ? (
+                    <img src={product.photo} alt={product.name} className="h-48 w-full object-cover" />
+                  ) : (
+                    <div className="h-48 w-full bg-gray-100 flex items-center justify-center text-4xl">📦</div>
+                  )}
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-900">{product.name}</h3>
+                    <div className="mt-2 text-sm text-gray-600">
+                      {product.dimensions && <div>Dimensions: {product.dimensions}</div>}
+                      {product.size && <div>Size: {product.size}</div>}
+                    </div>
+                    <div className="mt-2 text-lg font-medium text-gray-900">${product.price.toFixed(2)}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </section>
         )}
       </div>
