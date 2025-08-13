@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { Product } from '@/types/product'
+import { useCart } from '@/lib/cart/CartContext'
+import { useToast } from '@/lib/toast/ToastContext'
 
 export default function BusinessDetailsPage() {
   const params = useParams()
@@ -10,6 +12,8 @@ export default function BusinessDetailsPage() {
   const [row, setRow] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
   const [products, setProducts] = useState<Product[]>([])
+  const { addItem } = useCart()
+  const { show } = useToast()
 
   useEffect(() => {
     let mounted = true
@@ -113,13 +117,32 @@ export default function BusinessDetailsPage() {
                   ) : (
                     <div className="h-48 w-full bg-gray-100 flex items-center justify-center text-4xl">📦</div>
                   )}
-                  <div className="p-4">
+              <div className="p-4">
                     <h3 className="font-semibold text-gray-900">{product.name}</h3>
                     <div className="mt-2 text-sm text-gray-600">
                       {product.dimensions && <div>Dimensions: {product.dimensions}</div>}
                       {product.size && <div>Size: {product.size}</div>}
                     </div>
-                    <div className="mt-2 text-lg font-medium text-gray-900">${product.price.toFixed(2)}</div>
+                <div className="mt-2 text-lg font-medium text-gray-900">${product.price.toFixed(2)}</div>
+                <div className="mt-4">
+                  <button
+                    onClick={() => {
+                      addItem({
+                        id: product.id,
+                        productId: product.id,
+                        name: product.name,
+                        price: product.price,
+                        imageUrl: (product as any).photo,
+                        businessId: String(row.id),
+                        businessName: row.name,
+                      })
+                      show('Product added to cart', 'success')
+                    }}
+                    className="w-full px-3 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
                   </div>
                 </div>
               ))}

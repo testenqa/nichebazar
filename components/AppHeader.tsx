@@ -3,12 +3,14 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { supabaseBrowser } from '@/lib/supabase/client'
+import { useCart } from '@/lib/cart/CartContext'
 
 export default function AppHeader() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
   const [isAdmin, setIsAdmin] = useState<boolean>(false)
   const [menuOpen, setMenuOpen] = useState<boolean>(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const { totalItems } = useCart()
 
   useEffect(() => {
     let mounted = true
@@ -56,6 +58,12 @@ export default function AppHeader() {
           <nav className="flex items-center space-x-2 sm:space-x-4">
             <Link href="/about" className="px-3 sm:px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors">About</Link>
             <Link href="/contact" className="px-3 sm:px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors">Contact</Link>
+            <Link href="/cart" className="px-3 sm:px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors relative">
+              Cart
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 text-xs bg-blue-600 text-white rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center">{totalItems}</span>
+              )}
+            </Link>
             {isLoggedIn ? (
               <>
                 <Link href="/business/register" className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Add Business</Link>
